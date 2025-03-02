@@ -128,7 +128,8 @@ public enum HttpHeader {
     X_FORWARDED_HOST("X-Forwarded-Host"),
     X_FORWARDED_PROTO("X-Forwarded-Proto"),
     X_FRAME_OPTIONS("X-Frame-Options"),
-    X_XSS_PROTECTION("X-XSS-Protection");
+    X_XSS_PROTECTION("X-XSS-Protection"),
+    UNKNOWN("");
 
     private final String headerName;
 
@@ -144,6 +145,6 @@ public enum HttpHeader {
         return Arrays.stream(values())
                 .filter(v -> v.headerName.equals(headerName))
                 .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Header not found"));
+                .orElse(UNKNOWN);
     }
 }

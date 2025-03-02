@@ -1,15 +1,13 @@
 package com.chvs.webserverdemo;
 
-import com.chvs.webserverdemo.http.*;
+import com.chvs.webserverdemo.http.HttpHeader;
+import com.chvs.webserverdemo.http.HttpRequestParser;
+import com.chvs.webserverdemo.http.HttpResponse;
+import com.chvs.webserverdemo.http.ResponseStatusCode;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class MainApp {
@@ -30,7 +28,7 @@ public class MainApp {
     public static void main(String[] args) {
         try (ServerSocket serverSocket = new ServerSocket(18080)) {
             System.out.println("Initialize server");
-            var httpRequestParser = new HttpRequestParserImpl();
+            var httpRequestParser = new HttpRequestParser();
             for (;;) {
                 System.out.println("Income client request");
                 System.out.println("================================================================");
