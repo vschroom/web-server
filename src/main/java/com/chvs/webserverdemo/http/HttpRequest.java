@@ -1,53 +1,74 @@
 package com.chvs.webserverdemo.http;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public abstract class HttpRequest {
+public class HttpRequest {
 
-    private String method;
+    private HttpRequestType method;
     private String version;
     private String path;
-    private Map<HttpHeader, String> headers;
+    private final Map<HttpHeader, String> headers = new HashMap<>();
+    private byte[] body;
+    private HttpRequestType requestType;
 
-    public HttpRequest() {
+    private HttpRequest() {
     }
 
-    public HttpRequest(String method) {
-        this.method = method;
+    static HttpRequest create() {
+        return new HttpRequest();
     }
 
-    public HttpRequest(String method, String version, String path, Map<HttpHeader, String> headers) {
-        this.method = method;
-        this.version = version;
-        this.path = path;
-        this.headers = headers;
+    public void clearHttpRequest() {
+        this.method = null;
+        this.version = null;
+        this.path = null;
+        this.headers.clear();
+        this.body = null; // сделать фикс размер?
+        this.requestType = null;
     }
 
-    public String getMethod() {
+    HttpRequestType getMethod() {
         return method;
     }
 
-    public String getVersion() {
+    void setMethod(String method) {
+        this.method = HttpRequestType.valueOf(method);
+    }
+
+    String getVersion() {
         return version;
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public Map<HttpHeader, String> getHeaders() {
-        return headers;
-    }
-
-    public void setVersion(String version) {
+    void setVersion(String version) {
         this.version = version;
     }
 
-    public void setPath(String path) {
+    String getPath() {
+        return path;
+    }
+
+    void setPath(String path) {
         this.path = path;
     }
 
-    public void setHeaders(Map<HttpHeader, String> headers) {
-        this.headers = headers;
+    Map<HttpHeader, String> getHeaders() {
+        return headers;
+    }
+
+    byte[] getBody() {
+        return body;
+    }
+
+    void setBody(byte[] body) {
+        this.body = body;
+    }
+
+    HttpRequestType getRequestType() {
+        return requestType;
+    }
+
+    void setRequestType(HttpRequestType requestType) {
+        this.requestType = requestType;
     }
 }

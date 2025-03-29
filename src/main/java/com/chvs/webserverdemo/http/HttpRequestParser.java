@@ -4,37 +4,40 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Objects.requireNonNull;
 
 public class HttpRequestParser {
 
     public HttpRequest parse(InputStream requestData) throws IOException {
-        var inputData = new BufferedReader(new InputStreamReader(
-                requestData,
-                StandardCharsets.UTF_8));
-        int count = 0;
-        Map<HttpHeader, String> headers = new HashMap<>();
-        HttpRequest httpRequest = null;
+        var inputData = new BufferedReader(new InputStreamReader(requestData, UTF_8));
+        var httpRequest = requireNonNull(HttpRequestPool.HTTP_REQUEST_QUEUE.poll());
         String readLine;
+        boolean firstLineUnread = true;
+        byte bodyCnt = 0;
+        String body = "";
         while (!(readLine = inputData.readLine()).isBlank()) {
-            if (count == 0) {
+            if (readLine.equals("\n")) {
+                ++bodyCnt;
+            }
+            if (firstLineUnread) {
                 var line = readLine.split(" ");
                 var method = line[0];
-                if (method.equals("GET")) {
-                    httpRequest = new GetHttpRequest();
-                    httpRequest.setPath(line[1]);
-                    httpRequest.setVersion(line[2]);
-                }
-                count++;
+                httpRequest.setMethod(method);
+                httpRequest.setPath(line[1]);
+                httpRequest.setVersion(line[2]);
+                firstLineUnread = false;
+            } else if (bodyCnt == 2) {
+                body += readLine;
             } else {
                 var header = readLine.split(": ");
                 var httpHeader = HttpHeader.parse(header[0]);
-                headers.put(httpHeader, header[1]);
-                httpRequest.setHeaders(headers);
+                httpRequest.getHeaders().put(httpHeader, header[1]);
             }
         }
+
+        httpRequest.setBody(body.getBytes());
 
         return httpRequest;
     }
