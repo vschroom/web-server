@@ -24,6 +24,10 @@ public class HttpResponse {
         this.body = body;
     }
 
+    public static HttpResponse create() {
+        return new HttpResponse();
+    }
+
     public String getVersion() {
         return version;
     }

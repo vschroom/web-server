@@ -7,6 +7,10 @@ import java.util.concurrent.TimeUnit;
 public class CustomThreadPoolExecutor {
 
     public static final ThreadPoolExecutor poolExecutor = new ThreadPoolExecutor(
-            10, 20, 180000, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(50)
+            Runtime.getRuntime().availableProcessors(),
+            Runtime.getRuntime().availableProcessors() + 20,
+            180000,
+            TimeUnit.MILLISECONDS,
+            new ArrayBlockingQueue<>(50)
     );
 }
