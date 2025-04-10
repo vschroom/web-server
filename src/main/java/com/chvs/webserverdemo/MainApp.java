@@ -17,7 +17,17 @@ public class MainApp {
             var httpRequestParser = new HttpRequestParser();
             var customApi = new CustomApi();
             for (; ; ) {
-                CompletableFuture.runAsync(() -> processRequest(serverSocket, httpRequestParser, customApi));
+                // переделать, здесь надо принимать обработку сокета
+                // + доделать обработку ошибок
+                try {
+                    Socket acceptSocket = serverSocket.accept();
+                    CompletableFuture.runAsync(() -> processRequest(acceptSocket, httpRequestParser, customApi));
+                } catch (Exception e) {
+                    // переделать на норм логирование
+                    System.out.println("Error!!!");
+                    System.out.println(e);
+                }
+
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -25,21 +35,23 @@ public class MainApp {
     }
 
     private static void processRequest(
-            ServerSocket serverSocket,
+            Socket acceptSocket,
             HttpRequestParser httpRequestParser,
             CustomApi customApi
     ) {
-        try (Socket acceptSocket = serverSocket.accept()) {
-            var response = CompletableFuture.supplyAsync(
-                    () -> process(acceptSocket, httpRequestParser, customApi),
-                    CustomThreadPoolExecutor.poolExecutor
-            );
-
-            var out = acceptSocket.getOutputStream();
-            out.write(response.get().toResponse());
-            System.out.println("Client disconnected!");
-        } catch (Exception e) {
+        var response = process(acceptSocket, httpRequestParser, customApi);
+        try (var out = acceptSocket.getOutputStream()) {
+            out.write(response.toResponse());
+            System.out.println("Запрос обработан.");
+        } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                acceptSocket.close();
+                // обработать норм.
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
