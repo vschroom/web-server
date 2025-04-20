@@ -17,10 +17,8 @@ public class MainApp {
             var httpRequestParser = new HttpRequestParser();
             var customApi = new CustomApi();
             for (; ; ) {
-                // переделать, здесь надо принимать обработку сокета
-                // + доделать обработку ошибок
                 try {
-                    Socket acceptSocket = serverSocket.accept();
+                    var acceptSocket = serverSocket.accept();
                     CompletableFuture.runAsync(() -> processRequest(acceptSocket, httpRequestParser, customApi));
                 } catch (Exception e) {
                     // переделать на норм логирование
@@ -58,26 +56,26 @@ public class MainApp {
     private static HttpResponse process(Socket acceptSocket,
                                         HttpRequestParser httpRequestParser,
                                         CustomApi customApi) {
-        HttpRequest httpRequest = null;
-        HttpResponse httpResponse = null;
+        var httpResponse = HttpResponsePool.getResponse();
+        var httpRequestOpt = HttpRequestPool.getRequest();
+        if (httpRequestOpt.isEmpty()) {
+            httpResponse.setStatusCode(SERVICE_UNAVAILABLE);
+            httpResponse.setBody(new RequestConnectionPoolEmptyException().getMessage().getBytes());
+            return httpResponse;
+        }
+        var httpRequest = httpRequestOpt.get();
         try {
-            httpRequest = httpRequestParser.parse(acceptSocket.getInputStream());
-            httpResponse = HttpResponsePool.getResponse();
+            var in = acceptSocket.getInputStream();
+            httpRequest = httpRequestParser.parse(httpRequest, in);
             customApi.process(httpRequest, httpResponse);
 
             return httpResponse;
         } catch (IOException e) {
-            var response = HttpResponsePool.getResponse();
-            response.setResponseStatusCode(SERVICE_UNAVAILABLE);
-            return response;
+            httpResponse.setStatusCode(SERVICE_UNAVAILABLE);
+            return httpResponse;
         } finally {
-            if (httpRequest != null) {
-                httpRequest.clearHttpRequest();
-                HttpRequestPool.addRequest(httpRequest);
-            }
-            if (httpResponse != null) {
-                HttpResponsePool.addResponse(httpResponse);
-            }
+            HttpRequestPool.putBack(httpRequest);
+            HttpResponsePool.putBack(httpResponse);
         }
     }
 }

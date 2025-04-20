@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 public class HttpResponse {
 
     private String version = "HTTP/1.1";
-    private ResponseStatusCode responseStatusCode;
+    private ResponseStatusCode statusCode;
     private Map<HttpHeader, String> headers = new HashMap<>();
     private byte[] body;
 
@@ -15,11 +15,11 @@ public class HttpResponse {
     }
 
     public HttpResponse(String version,
-                        ResponseStatusCode responseStatusCode,
+                        ResponseStatusCode statusCode,
                         Map<HttpHeader, String> headers,
                         byte[] body) {
         this.version = version;
-        this.responseStatusCode = responseStatusCode;
+        this.statusCode = statusCode;
         this.headers = headers;
         this.body = body;
     }
@@ -32,8 +32,8 @@ public class HttpResponse {
         return version;
     }
 
-    public ResponseStatusCode getResponseStatusCode() {
-        return responseStatusCode;
+    public ResponseStatusCode getStatusCode() {
+        return statusCode;
     }
 
     public Map<HttpHeader, String> getHeaders() {
@@ -48,8 +48,8 @@ public class HttpResponse {
         this.version = version;
     }
 
-    public void setResponseStatusCode(ResponseStatusCode responseStatusCode) {
-        this.responseStatusCode = responseStatusCode;
+    public void setStatusCode(ResponseStatusCode statusCode) {
+        this.statusCode = statusCode;
     }
 
     public void setHeaders(Map<HttpHeader, String> headers) {
@@ -61,7 +61,7 @@ public class HttpResponse {
     }
 
     public byte[] toResponse() {
-        return ("%s %s %s".formatted(version, responseStatusCode.getCode(), responseStatusCode.name())
+        return ("%s %s %s".formatted(version, statusCode.getCode(), statusCode.name())
                 + "\n" +
                 headers.entrySet()
                         .stream()

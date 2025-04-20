@@ -9,25 +9,23 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class HttpRequestParser {
 
-    public HttpRequest parse(InputStream requestData) throws IOException {
+    public HttpRequest parse(HttpRequest httpRequest, InputStream requestData) throws IOException {
         var inputData = new BufferedReader(new InputStreamReader(requestData, UTF_8));
-        var httpRequest = HttpRequestPool.getRequest();
         String readLine;
-        boolean firstLineUnread = true;
         byte bodyCnt = 0;
         String body = "";
+        readLine = inputData.readLine();
+        var line = readLine.split(" ");
+        var method = line[0];
+        httpRequest.setMethod(method);
+        httpRequest.setPath(line[1]);
+        httpRequest.setVersion(line[2]);
+        fillParams(httpRequest);
         while (!(readLine = inputData.readLine()).isBlank()) {
             if (readLine.equals("\n")) {
                 ++bodyCnt;
             }
-            if (firstLineUnread) {
-                var line = readLine.split(" ");
-                var method = line[0];
-                httpRequest.setMethod(method);
-                httpRequest.setPath(line[1]);
-                httpRequest.setVersion(line[2]);
-                firstLineUnread = false;
-            } else if (bodyCnt == 2) {
+            if (bodyCnt == 2) {
                 body += readLine;
             } else {
                 var header = readLine.split(": ");
@@ -38,5 +36,20 @@ public class HttpRequestParser {
         httpRequest.setBody(body.getBytes());
 
         return httpRequest;
+    }
+
+    private void fillParams(HttpRequest httpRequest) {
+        var path = httpRequest.getPath();
+        var splitPath = path.split("\\?");
+        if (splitPath.length != 2) {
+            return;
+        }
+
+        var httpRequestParams = httpRequest.getParams();
+        var args = splitPath[1];
+        for (var arg : args.split("&")) {
+            var params = arg.split("=");
+            httpRequestParams.put(params[0], params[1]);
+        }
     }
 }

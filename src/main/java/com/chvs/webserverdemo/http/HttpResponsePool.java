@@ -15,15 +15,10 @@ public class HttpResponsePool {
     }
 
     public static HttpResponse getResponse() {
-        var httpResponse = HTTP_RESPONSE_QUEUE.poll();
-        if (httpResponse == null) {
-            throw new IllegalStateException("Очередь ответов переполнена");
-        }
-
-        return httpResponse;
+        return HTTP_RESPONSE_QUEUE.poll();
     }
 
-    public static void addResponse(HttpResponse httpResponse) {
+    public static void putBack(HttpResponse httpResponse) {
         HTTP_RESPONSE_QUEUE.add(httpResponse);
     }
 }

@@ -1,7 +1,5 @@
 package com.chvs.webserverdemo.http;
 
-import java.util.Arrays;
-
 public enum HttpHeader {
     ACCEPT("Accept"),
     ACCEPT_CH("Accept-CH"),
@@ -139,12 +137,5 @@ public enum HttpHeader {
 
     public String getHeaderName() {
         return headerName;
-    }
-
-    public static HttpHeader parse(String headerName) {
-        return Arrays.stream(values())
-                .filter(v -> v.headerName.equals(headerName))
-                .findFirst()
-                .orElse(UNKNOWN);
     }
 }

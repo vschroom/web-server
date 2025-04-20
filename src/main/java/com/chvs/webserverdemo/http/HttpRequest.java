@@ -11,6 +11,7 @@ public class HttpRequest {
     private final Map<String, String> headers = new HashMap<>();
     private byte[] body;
     private HttpRequestType requestType;
+    private Map<String, Object> params = new HashMap<>();
 
     private HttpRequest() {
     }
@@ -26,6 +27,7 @@ public class HttpRequest {
         this.headers.clear();
         this.body = null; // сделать фикс размер?
         this.requestType = null;
+        this.params.clear();
     }
 
     HttpRequestType getMethod() {
@@ -70,5 +72,9 @@ public class HttpRequest {
 
     void setRequestType(HttpRequestType requestType) {
         this.requestType = requestType;
+    }
+
+    public Map<String, Object> getParams() {
+        return params;
     }
 }

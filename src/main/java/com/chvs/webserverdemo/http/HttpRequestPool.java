@@ -1,6 +1,9 @@
 package com.chvs.webserverdemo.http;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
+
+import static java.util.Optional.ofNullable;
 
 public class HttpRequestPool {
 
@@ -14,16 +17,12 @@ public class HttpRequestPool {
         }
     }
 
-    public static HttpRequest getRequest() {
-        var httpRequest = HTTP_REQUEST_QUEUE.poll();
-        if (httpRequest == null) {
-            throw new IllegalStateException("Количество свободных запросов истекло. Необходимо увеличить количество, либо дождаться завершения выполнения других");
-        }
-
-        return httpRequest;
+    public static Optional<HttpRequest> getRequest() {
+        return ofNullable(HTTP_REQUEST_QUEUE.poll());
     }
 
-    public static void addRequest(HttpRequest httpRequest) {
+    public static void putBack(HttpRequest httpRequest) {
+        httpRequest.clearHttpRequest();
         HTTP_REQUEST_QUEUE.add(httpRequest);
     }
 }

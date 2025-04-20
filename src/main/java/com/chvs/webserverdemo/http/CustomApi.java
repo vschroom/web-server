@@ -9,7 +9,7 @@ public class CustomApi {
             return;
         }
         response.setHeaders(Map.of());
-        response.setResponseStatusCode(ResponseStatusCode.CREATED);
+        response.setStatusCode(ResponseStatusCode.CREATED);
         response.setHeaders(Map.of(HttpHeader.CONTENT_TYPE, "application/json"));
         response.setBody("Simple response".getBytes());
     }
