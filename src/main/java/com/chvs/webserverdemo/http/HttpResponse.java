@@ -24,6 +24,12 @@ public class HttpResponse {
         this.body = body;
     }
 
+    public void clearResponse() {
+        statusCode = null;
+        headers.clear();
+        body = null;
+    }
+
     public static HttpResponse create() {
         return new HttpResponse();
     }
@@ -68,7 +74,7 @@ public class HttpResponse {
                         .map(e -> e.getKey() + ": " + e.getValue())
                         .collect(Collectors.joining("\n"))
                 + "\n\n" +
-                new String(body)
+                (body == null ? "" : new String(body))
         ).getBytes();
     }
 }

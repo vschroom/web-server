@@ -11,7 +11,7 @@ public class HttpRequest {
     private final Map<String, String> headers = new HashMap<>();
     private byte[] body;
     private HttpRequestType requestType;
-    private Map<String, Object> params = new HashMap<>();
+    private Map<String, Object> pathParams = new HashMap<>();
 
     private HttpRequest() {
     }
@@ -27,7 +27,7 @@ public class HttpRequest {
         this.headers.clear();
         this.body = null; // сделать фикс размер?
         this.requestType = null;
-        this.params.clear();
+        this.pathParams.clear();
     }
 
     HttpRequestType getMethod() {
@@ -35,7 +35,13 @@ public class HttpRequest {
     }
 
     void setMethod(String method) {
-        this.method = HttpRequestType.valueOf(method);
+        for (var requestType : HttpRequestType.values()) {
+            if (requestType.name().equals(method)) {
+                this.method = HttpRequestType.valueOf(method);
+                return;
+            }
+        }
+        throw new HttpParseRequestException();
     }
 
     String getVersion() {
@@ -74,7 +80,7 @@ public class HttpRequest {
         this.requestType = requestType;
     }
 
-    public Map<String, Object> getParams() {
-        return params;
+    public Map<String, Object> getPathParams() {
+        return pathParams;
     }
 }

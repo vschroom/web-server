@@ -16,14 +16,17 @@ public class MainApp {
             System.out.printf("Initialize server on port: %s%n", 18080);
             var httpRequestParser = new HttpRequestParser();
             var customApi = new CustomApi();
-            for (; ; ) {
+            for (;;) {
                 try {
                     var acceptSocket = serverSocket.accept();
-                    CompletableFuture.runAsync(() -> processRequest(acceptSocket, httpRequestParser, customApi));
+                    CompletableFuture.runAsync(
+                            () -> processRequest(acceptSocket, httpRequestParser, customApi),
+                            CustomThreadPoolExecutor.poolExecutor
+                    );
                 } catch (Exception e) {
                     // переделать на норм логирование
                     System.out.println("Error!!!");
-                    System.out.println(e);
+                    System.out.println(e.getMessage());
                 }
 
             }
@@ -42,6 +45,7 @@ public class MainApp {
             out.write(response.toResponse());
             System.out.println("Запрос обработан.");
         } catch (IOException e) {
+            // надо подумать, т.к. здесь сложно вернуть ответ
             throw new RuntimeException(e);
         } finally {
             try {
@@ -50,6 +54,7 @@ public class MainApp {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+            HttpResponsePool.putBack(response);
         }
     }
 
@@ -57,16 +62,14 @@ public class MainApp {
                                         HttpRequestParser httpRequestParser,
                                         CustomApi customApi) {
         var httpResponse = HttpResponsePool.getResponse();
-        var httpRequestOpt = HttpRequestPool.getRequest();
-        if (httpRequestOpt.isEmpty()) {
-            httpResponse.setStatusCode(SERVICE_UNAVAILABLE);
-            httpResponse.setBody(new RequestConnectionPoolEmptyException().getMessage().getBytes());
-            return httpResponse;
-        }
-        var httpRequest = httpRequestOpt.get();
+        var httpRequest = HttpRequestPool.getRequest();
         try {
             var in = acceptSocket.getInputStream();
-            httpRequest = httpRequestParser.parse(httpRequest, in);
+            httpRequestParser.parse(httpRequest, httpResponse, in);
+            if (httpResponse.getStatusCode() != null) {
+                return httpResponse;
+            }
+
             customApi.process(httpRequest, httpResponse);
 
             return httpResponse;
@@ -75,7 +78,6 @@ public class MainApp {
             return httpResponse;
         } finally {
             HttpRequestPool.putBack(httpRequest);
-            HttpResponsePool.putBack(httpResponse);
         }
     }
 }
