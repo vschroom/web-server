@@ -23,7 +23,15 @@ public class HttpRequestParser {
             parseBody(httpRequest, requestData);
         } catch (HttpParseRequestException pex) {
             httpResponse.setStatusCode(pex.getStatusCode());
+        } finally {
+            clearBuffers();
         }
+    }
+
+    private void clearBuffers() {
+        BUFFER.delete(0, BUFFER.length());
+        KEY_BUFFER.delete(0, KEY_BUFFER.length());
+        VALUE_BUFFER.delete(0, VALUE_BUFFER.length());
     }
 
     private void parseStartLine(HttpRequest httpRequest, InputStream inputData) throws HttpParseRequestException, IOException {
@@ -78,7 +86,6 @@ public class HttpRequestParser {
                         VALUE_BUFFER.append((char) readByte);
                     }
                 }
-                BUFFER.delete(0, BUFFER.length());
             } else {
                 BUFFER.append((char) readByte);
             }
